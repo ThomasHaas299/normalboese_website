@@ -1,0 +1,20 @@
+services:
+  web:
+    container_name: "normalboesede"
+    image: nginx:alpine
+    ports:
+      - "9017:80"
+    volumes:
+       - ./app/:/usr/share/nginx/html
+    restart: unless-stopped
+#     networks:
+#       - proxy
+#     labels:
+#       - "traefik.enable=true"
+#       - "traefik.http.routers.normalboesede.rule=Host(`normalboese.de`) || Host(`www.normalboese.de`)"
+#       - "traefik.http.routers.normalboesede.entrypoints=websecure"
+#       - "traefik.http.routers.normalboesede.tls.certresolver=myresolver"
+
+# networks:
+#   proxy:
+#     external: true
