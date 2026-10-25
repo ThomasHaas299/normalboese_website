@@ -1,19 +1,28 @@
 services:
-  web:
-    container_name: "normalboesede"
-    image: nginx:alpine
-    ports:
-      - "9017:80"
-    volumes:
-       - ./app/:/usr/share/nginx/html
+  redirect-normalboesede:
+    image: traefik/whoami:latest # nur als Platzhalter für die Labels
     restart: unless-stopped
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.normalboesede.rule=Host(`normalboese.de`) || Host(`www.normalboese.de`)"
-      - "traefik.http.routers.normalboesede.entrypoints=websecure"
-      - "traefik.http.routers.normalboesede.tls.certresolver=myresolver"
+
+      # Router für NUR die Apex-Domain
+      - "traefik.http.routers.nb-redirect.rule=Host(`normalboese.de`)"
+      - "traefik.http.routers.nb-redirect.entrypoints=websecure"
+
+      # TLS + Zertifikat
+      - "traefik.http.routers.nb-redirect.tls=true"
+      - "traefik.http.routers.nb-redirect.tls.certresolver=myresolver"
+
+      # 301 Redirect auf www.normalboese.de (Pfad + Query bleiben erhalten)
+      - "traefik.http.middlewares.nb-redirect-host.redirectregex.regex=^https?://normalboese\\.de(.*)"
+      - "traefik.http.middlewares.nb-redirect-host.redirectregex.replacement=https://www.normalboese.de$1"
+      - "traefik.http.middlewares.nb-redirect-host.redirectregex.permanent=true"
+      - "traefik.http.routers.nb-redirect.middlewares=nb-redirect-host"
+
+      # Kein echtes Backend
+      - "traefik.http.routers.nb-redirect.service=noop@internal"
 
 networks:
   proxy:
